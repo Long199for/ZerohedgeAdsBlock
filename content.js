@@ -14,11 +14,13 @@
           'section[class^="PromoButton_promoButton"]',
           'section[class^="DebateButton_promoButton"]',
           'a[class^="ListFrontPage_storePromo"]',
+          'a[class^="endorsement"]',
           'div[class^="Feature"]',
           'div[class^="pack"]',
           'div[class^="leaderboard-tablet-container"]',
           'div[class^="PromoBanner"]',
           'div[class^="native"]',
+          'div[class^="Recirculator_"]',
           'div[class^="banner"]',
           'div[class^="Advert"]',
           'div[class^="bottom-banner-container"]',
@@ -30,6 +32,8 @@
           'footer[class^="ArticleFull"]',
           'footer[class^="Footer_containe"]',
           'ins[class^="adsby"]',
+          'iframe[id^="google_ads"]',
+          'div[id^="google_ads"]',
           'div[class^="PremiumOverlay"]'
       ]
   };

@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "ZeroHedge & X Ad Blocker (Local)",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A simple Chrome extension to block ads on zerohedge.com & X.com (local use only).",
     "permissions": [
       "activeTab",
