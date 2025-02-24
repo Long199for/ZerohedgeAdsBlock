@@ -1,70 +1,81 @@
-console.log("ZeroHedge Ad Blocker content script loaded.");
+// 广告过滤脚本
+(function() {
+  // 根据网站定义不同的广告选择器
+  const adSelectorsByHost = {
+      'x.com': [
+          'div[data-testid="placementTracking"]',  // X.com 广告容器
+          'article div[aria-label*="Promoted"]',    // X.com 推广内容
+          'div[class*="ad-"]',                     // 类名包含 "ad-"
+          'div[role="presentation"] a[href*="/i/"]' // 广告链接特征
+      ],
+      'zerohedge.com': [
+          'section[class^="Sidebar"]',
+          'section[class^="sidebar"]',
+          'section[class^="PromoButton_promoButton"]',
+          'section[class^="DebateButton_promoButton"]',
+          'a[class^="ListFrontPage_storePromo"]',
+          'div[class^="Feature"]',
+          'div[class^="pack"]',
+          'div[class^="leaderboard-tablet-container"]',
+          'div[class^="PromoBanner"]',
+          'div[class^="native"]',
+          'div[class^="banner"]',
+          'div[class^="Advert"]',
+          'div[class^="bottom-banner-container"]',
+          'div[class^="MidArticle"]',
+          'div[class^="Sponsor"]',
+          'div[class^="Article_stickyContainer"]',
+          'h3[class^="Sponsor"]',
+          'div[class^="BlockComments"]',
+          'footer[class^="ArticleFull"]',
+          'footer[class^="Footer_containe"]',
+          'ins[class^="adsby"]',
+          'div[class^="PremiumOverlay"]'
+      ]
+  };
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM content loaded, starting ad filtering...");
-  filterAds();
-});
+  // 获取当前网站的 hostname
+  const hostname = window.location.hostname;
+  let adSelectors = [];
 
-function filterAds() {
-  const adSelectors = [
-    'section[class^="Sidebar"]',
-    'section[class^="sidebar"]',
-    'section[class^="PromoButton_promoButton"]',
-    'section[class^="DebateButton_promoButton"]',
-    'a[class^="ListFrontPage_storePromo"]',
-    'div[class^="Feature"]',
-    'div[class^="pack"]',
-    'div[class^="leaderboard-tablet-container"]',
-    'div[class^="PromoBanner"]',
-    'div[class^="native"]',
-    'div[class^="banner"]',
-    'div[class^="Advert"]',
-    'div[class^="bottom-banner-container"]',
-    'div[class^="MidArticle"]',
-    'div[class^="Sponsor"]',
-    'div[class^="Article_stickyContainer"]',
-    'h3[class^="Sponsor"]',
-    'div[class^="BlockComments"]',
-    'footer[class^="ArticleFull"]',
-    'footer[class^="Footer_containe"]',
-    'ins[class^="adsby"]',
-    'div[class^="PremiumOverlay"]'
-  ];
+  // 根据 hostname 选择对应的 adSelectors
+  for (const host in adSelectorsByHost) {
+      if (hostname.includes(host)) {
+          adSelectors = adSelectorsByHost[host];
+          break;
+      }
+  }
 
-  adSelectors.forEach(selector => {
-    const adElements = document.querySelectorAll(selector);
-    if (adElements.length > 0) {
-      console.log(`Found ${adElements.length} ad elements with selector: ${selector}`);
-      adElements.forEach(element => {
-        element.remove(); // 删除匹配的元素
-        console.log("Removed ad element:", element);
+  // 如果没有匹配到网站，退出
+  if (adSelectors.length === 0) {
+      console.log('No ad selectors defined for this site.');
+      return;
+  }
+
+  // 创建 MutationObserver 监控 DOM 变化
+  const observer = new MutationObserver((mutations) => {
+      removeAds();
+  });
+
+  // 开始观察整个文档的变化
+  observer.observe(document.body, {
+      childList: true,
+      subtree: true
+  });
+
+  // 移除广告的函数
+  function removeAds() {
+      adSelectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => {
+              if (el && el.parentNode) {
+                  el.parentNode.removeChild(el);
+                  console.log(`Removed ad element: ${selector} on ${hostname}`);
+              }
+          });
       });
-    } else {
-      console.log(`No ad elements found with selector: ${selector}`);
-    }
-  });
+  }
 
-  console.log("Ad filtering completed (initial pass).");
-}
-
-// ------------------------------------------------------------------
-//  !!! 可选增强 - 使用 MutationObserver 监听 DOM 变化 !!!
-//  如果网站使用 JavaScript 动态加载广告，
-//  DOMContentLoaded 事件后出现的广告可能无法被立即过滤。
-//  可以使用 MutationObserver 监听 DOM 变化，并在有新节点添加时
-//  再次运行 filterAds() 进行过滤。
-// ------------------------------------------------------------------
-const observer = new MutationObserver(mutations => {
-  mutations.forEach(mutation => {
-    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-      console.log("DOM mutation detected (childList added), re-filtering ads...");
-      filterAds(); // 再次运行广告过滤
-    }
-  });
-});
-
-observer.observe(document.body, { // 监听 body 元素及其子元素的变动
-  childList: true, // 监听子节点的添加和删除
-  subtree: true    // 监听所有后代节点
-});
-// ------------------------------------------------------------------
+  // 页面加载时立即执行一次
+  removeAds();
+})();
